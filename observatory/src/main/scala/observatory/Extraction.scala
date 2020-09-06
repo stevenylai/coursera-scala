@@ -20,9 +20,6 @@ object Extraction extends ExtractionInterface {
     val fileStream = Source.getClass.getResourceAsStream(resource)
     sc.makeRDD(Source.fromInputStream(fileStream).getLines().toList)
   }
-  private def dateLocationTemperature(year: Year, stationsFile: String, temperaturesFile: String) = {
-
-  }
   /**
     * @param year             Year number
     * @param stationsFile     Path of the stations resource file to use (e.g. "/stations.csv")
@@ -36,9 +33,8 @@ object Extraction extends ExtractionInterface {
     val stations = stationsLines.map(line => {
         val arr = line.split(",")
         (
-          //if (arr.length < 1 || arr(0).isEmpty) None else Some(arr(0)),
-          //if (arr.length < 2 || arr(1).isEmpty) None else Some(arr(1)),
-          Some(arr(0)), Some(arr(1)),
+          if (arr.length < 1) None else Some(arr(0)),
+          if (arr.length < 2) None else Some(arr(1)),
           if (arr.length >= 4) {
             for {
               lat <- if (arr(2).isEmpty) None else Some(arr(2).toDouble)
@@ -52,9 +48,8 @@ object Extraction extends ExtractionInterface {
     val temperature = yearLines.map(line => {
       val arr = line.split(",")
       (
-        //if (arr.length < 1 || arr(0).isEmpty) None else Some(arr(0)),
-        //if (arr.length < 2 || arr(1).isEmpty) None else Some(arr(1)),
-        Some(arr(0)), Some(arr(1)),
+        if (arr.length < 1) None else Some(arr(0)),
+        if (arr.length < 2) None else Some(arr(1)),
         if (arr.length >= 4) {
           for {
             month <- if (arr(2).isEmpty) None else Some(arr(2).toInt)
@@ -64,10 +59,10 @@ object Extraction extends ExtractionInterface {
         if (arr.length < 5 || arr(4).isEmpty) None else Some(arr(4).toDouble)
       )
     }).collect{
-      case (Some(stn), Some(wban), Some(d), Some(t)) => StationID(stn, wban) -> (d, t)
+      case (Some(stn), Some(wban), Some(d), Some(t)) => (StationID(stn, wban), (d, t))
     }
     stations.join(temperature).values.map{
-      case (l, (d, t)) => (d, l, t)
+      case (l, (d, t)) => (d, l, (t - 32) * 5 / 9)
     }.collect().toSeq
   }
 
