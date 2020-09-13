@@ -86,7 +86,7 @@ object Visualization extends VisualizationInterface {
       val loc = Location(90 - i, j - 180)
       val temp = predictTemperature(temperatures, loc)
       val color = interpolateColor(colors, temp)
-      val pix = Pixel(color.red, color.green, color.blue, 0)
+      val pix = Pixel(color.red, color.green, color.blue, 127)
       pixelMap(i * 360 + j) = pix
     }
     Image(360, 180, pixelMap)

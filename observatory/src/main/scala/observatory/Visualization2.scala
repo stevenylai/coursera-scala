@@ -23,7 +23,9 @@ object Visualization2 extends Visualization2Interface {
     d10: Temperature,
     d11: Temperature
   ): Temperature = {
-    ???
+    val x1 = d00 + point.x * (d10 - d00)
+    val x2 = d01 + point.x * (d11 - d01)
+    x1 + point.y * (x2 - x1)
   }
 
   /**
@@ -37,7 +39,28 @@ object Visualization2 extends Visualization2Interface {
     colors: Iterable[(Temperature, Color)],
     tile: Tile
   ): Image = {
-    ???
+    val pixelMap = new Array[Pixel](256 * 256)
+    for {
+      i <- 0 until 256
+      j <- 0 until 256
+    } {
+      val subtile = Interaction.getSubtileByPixel(i, j, tile, 1, 8)
+      val loc = Interaction.tileLocation(subtile)
+      val point = CellPoint(loc.lon - loc.lon.floor, loc.lat - loc.lat.floor)
+      val d00 = GridLocation(loc.lat.floor.toInt, loc.lon.floor.toInt)
+      val d01 = GridLocation(loc.lat.ceil.toInt, loc.lon.floor.toInt)
+      val d10 = GridLocation(loc.lat.floor.toInt, loc.lon.ceil.toInt)
+      val d11 = GridLocation(loc.lat.ceil.toInt, loc.lon.ceil.toInt)
+      val temp = bilinearInterpolation(
+        point,
+        grid(d00), grid(d01),
+        grid(d10), grid(d11)
+      )
+      val color = Visualization.interpolateColor(colors, temp)
+      val pix = Pixel(color.red, color.green, color.blue, 127)
+      pixelMap(i + j * 256) = pix
+    }
+    Image(256, 256, pixelMap)
   }
 
 }
