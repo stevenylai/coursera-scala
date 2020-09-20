@@ -36,7 +36,7 @@ object Interaction2 extends Interaction2Interface {
     * @return A signal containing the year bounds corresponding to the selected layer
     */
   def yearBounds(selectedLayer: Signal[Layer]): Signal[Range] = {
-    ???
+    Signal[Range](selectedLayer().bounds)
   }
 
   /**
@@ -48,7 +48,16 @@ object Interaction2 extends Interaction2Interface {
     *         in the `selectedLayer` bounds.
     */
   def yearSelection(selectedLayer: Signal[Layer], sliderValue: Signal[Year]): Signal[Year] = {
-    ???
+    Signal[Year]{
+      val validRange = yearBounds(selectedLayer)()
+      if (sliderValue() < validRange.start) {
+        validRange.start
+      } else if (sliderValue() >= validRange.`end`) {
+        validRange.`end`
+      } else {
+        sliderValue()
+      }
+    }
   }
 
   /**
@@ -57,7 +66,11 @@ object Interaction2 extends Interaction2Interface {
     * @return The URL pattern to retrieve tiles
     */
   def layerUrlPattern(selectedLayer: Signal[Layer], selectedYear: Signal[Year]): Signal[String] = {
-    ???
+    Signal[String]{
+      val layer = selectedLayer()
+      val year = yearSelection(selectedLayer, selectedYear)()
+      "target/" + layer.layerName.id + "/" + year
+    }
   }
 
   /**
@@ -66,7 +79,11 @@ object Interaction2 extends Interaction2Interface {
     * @return The caption to show
     */
   def caption(selectedLayer: Signal[Layer], selectedYear: Signal[Year]): Signal[String] = {
-    ???
+    Signal[String]{
+      val layer = selectedLayer()
+      val year = yearSelection(selectedLayer, selectedYear)()
+      layer.layerName.id.capitalize + " (" + year + ")"
+    }
   }
 
 }
